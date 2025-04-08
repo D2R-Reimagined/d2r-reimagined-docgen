@@ -1,0 +1,31 @@
+<Window 
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="clr-namespace:Avalonia.Notification.Controls;assembly=Notification.Avalonia"
+    xmlns:local="clr-namespace:ReimaginedDocgen"
+    mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+    x:Class="ReimaginedDocgen.MainWindow"
+    Title="D2R Reimagined Docgen"
+>
+    <StackPanel Margin="20" Spacing="10">
+        <!-- Notification Panel -->
+        <controls:NotificationMessageContainer Manager="{x:Static local:MainWindow.ManagerInstance}" />
+        
+        <TextBlock Text="Select top level 'data' Directory:" Margin="0,0,0,5"/>
+        <DockPanel>
+            <TextBox x:Name="DirectoryTextBox" Width="500" IsReadOnly="True" Margin="0,0,5,0"/>
+            <Button Content="Browse" Click="OnBrowseClick"/>
+        </DockPanel>
+        
+        <!-- Output Directory -->
+        <TextBlock Text="JSON Output Directory:" Margin="0,20,0,5"/>
+        <DockPanel Margin="0,0,0,10">
+            <TextBox x:Name="OutputDirectoryTextBox" Width="500" IsReadOnly="True" Margin="0,0,5,0"/>
+            <Button Content="Browse" Click="OnBrowseOutputClick"/>
+        </DockPanel>
+
+        <Button Content="Run" Margin="0,20,0,0" Click="OnRunClick"/>
+    </StackPanel>
+</Window>
