@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -12,7 +13,7 @@ namespace ReimaginedDocgen;
 public partial class MainWindow : Window
 {
     public static INotificationMessageManager ManagerInstance { get; } = new NotificationMessageManager();
-    private AppSettings _settings = new();
+    public static AppSettings Settings = new();
 
     public MainWindow()
     {
@@ -22,13 +23,17 @@ public partial class MainWindow : Window
     
     private async Task LoadSettingsAsync()
     {
-        _settings = await SettingsManager.LoadAsync();
+        Settings = await SettingsManager.LoadAsync();
     
-        if (!string.IsNullOrWhiteSpace(_settings.InputDirectory))
-            DirectoryTextBox.Text = _settings.InputDirectory;
+        if (!string.IsNullOrWhiteSpace(Settings.InputDirectory))
+            DirectoryTextBox.Text = Settings.InputDirectory;
 
-        if (!string.IsNullOrWhiteSpace(_settings.OutputDirectory))
-            OutputDirectoryTextBox.Text = _settings.OutputDirectory;
+        if (!string.IsNullOrWhiteSpace(Settings.OutputDirectory))
+            OutputDirectoryTextBox.Text = Settings.OutputDirectory;
+        
+        LanguageComboBox.SelectedItem = LanguageComboBox.Items
+            .OfType<ComboBoxItem>()
+            .FirstOrDefault(i => (string)i.Content == Settings.Language);
     }
     
     private async void OnBrowseClick(object? sender, RoutedEventArgs e)
@@ -43,8 +48,8 @@ public partial class MainWindow : Window
         {
             var path = folders[0].Path.LocalPath;
             DirectoryTextBox.Text = path;
-            _settings.InputDirectory = path;
-            await SettingsManager.SaveAsync(_settings);
+            Settings.InputDirectory = path;
+            await SettingsManager.SaveAsync(Settings);
         }
     }
 
@@ -61,8 +66,8 @@ public partial class MainWindow : Window
         {
             var path = folders[0].Path.LocalPath;
             OutputDirectoryTextBox.Text = path;
-            _settings.OutputDirectory = path;
-            await SettingsManager.SaveAsync(_settings);
+            Settings.OutputDirectory = path;
+            await SettingsManager.SaveAsync(Settings);
         }
     }
 
@@ -83,4 +88,14 @@ public partial class MainWindow : Window
         await new UniqueItemsGenerator().GenerateCubeMainJson(inputDirectory, outputDirectory);
         Notifications.SendNotification("Unique Items Parsed", "Success");
     }
+    
+    private async void OnLanguageChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (LanguageComboBox.SelectedItem is ComboBoxItem item && item.Content is string langCode)
+        {
+            Settings.Language = langCode;
+            await SettingsManager.SaveAsync(Settings);
+        }
+    }
+
 }
