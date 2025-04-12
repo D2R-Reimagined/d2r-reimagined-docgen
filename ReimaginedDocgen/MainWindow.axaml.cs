@@ -4,6 +4,7 @@ using Avalonia.Interactivity;
 using Avalonia.Notification;
 using Avalonia.Platform.Storage;
 using ReimaginedDocgen.Generators;
+using ReimaginedDocgen.Utilities;
 
 namespace ReimaginedDocgen;
 
@@ -14,19 +15,6 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-    }
-
-    private void SendNotification(string message, string badgeType = "Info")
-    {
-        ManagerInstance
-            .CreateMessage()
-            .Accent("#1751C3")
-            .Animates(true)
-            .Background("#333")
-            .HasBadge(badgeType)
-            .HasMessage(message)
-            .Dismiss().WithDelay(TimeSpan.FromSeconds(5))
-            .Queue();
     }
     
     private async void OnBrowseClick(object? sender, RoutedEventArgs e)
@@ -65,12 +53,14 @@ public partial class MainWindow : Window
 
         if (string.IsNullOrWhiteSpace(inputDirectory) || string.IsNullOrWhiteSpace(outputDirectory))
         {
-            SendNotification("Please select both input and output directories.", "Warning");
+            Notifications.SendNotification("Please select both input and output directories.", "Warning");
             return;
         }
-
-        var generator = new CubeMainGenerator();
-        await generator.GenerateCubeMainJson(inputDirectory, outputDirectory);
-        SendNotification("Cube Main Parsed", "Success");
+        
+        await new CubeMainGenerator().GenerateCubeMainJson(inputDirectory, outputDirectory);
+        Notifications.SendNotification("Cube Main Parsed", "Success");
+        
+        await new UniqueItemsGenerator().GenerateCubeMainJson(inputDirectory, outputDirectory);
+        Notifications.SendNotification("Unique Items Parsed", "Success");
     }
 }
