@@ -36,6 +36,11 @@ public class UniqueItemsGenerator
             foreach (var property in entry.Properties)
             {
                 var propertyName = property.Property;
+                if (string.IsNullOrWhiteSpace(propertyName))
+                {
+                    continue;
+                }
+                
                 var propertyMin = property.Min;
                 var propertyMax = property.Max;
                 item.Properties.Add(new

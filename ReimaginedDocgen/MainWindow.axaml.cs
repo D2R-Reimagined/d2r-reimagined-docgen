@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Notification;
@@ -11,10 +12,23 @@ namespace ReimaginedDocgen;
 public partial class MainWindow : Window
 {
     public static INotificationMessageManager ManagerInstance { get; } = new NotificationMessageManager();
+    private AppSettings _settings = new();
 
     public MainWindow()
     {
         InitializeComponent();
+        _ = LoadSettingsAsync();
+    }
+    
+    private async Task LoadSettingsAsync()
+    {
+        _settings = await SettingsManager.LoadAsync();
+    
+        if (!string.IsNullOrWhiteSpace(_settings.InputDirectory))
+            DirectoryTextBox.Text = _settings.InputDirectory;
+
+        if (!string.IsNullOrWhiteSpace(_settings.OutputDirectory))
+            OutputDirectoryTextBox.Text = _settings.OutputDirectory;
     }
     
     private async void OnBrowseClick(object? sender, RoutedEventArgs e)
@@ -27,14 +41,17 @@ public partial class MainWindow : Window
 
         if (folders.Count > 0)
         {
-            DirectoryTextBox.Text = folders[0].Path.LocalPath;
+            var path = folders[0].Path.LocalPath;
+            DirectoryTextBox.Text = path;
+            _settings.InputDirectory = path;
+            await SettingsManager.SaveAsync(_settings);
         }
     }
 
 
     private async void OnBrowseOutputClick(object? sender, RoutedEventArgs e)
     {
-        var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        var folders = await this.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
             Title = "Select Output Folder",
             AllowMultiple = false
@@ -42,7 +59,10 @@ public partial class MainWindow : Window
 
         if (folders.Count > 0)
         {
-            OutputDirectoryTextBox.Text = folders[0].Path.LocalPath;
+            var path = folders[0].Path.LocalPath;
+            OutputDirectoryTextBox.Text = path;
+            _settings.OutputDirectory = path;
+            await SettingsManager.SaveAsync(_settings);
         }
     }
 
