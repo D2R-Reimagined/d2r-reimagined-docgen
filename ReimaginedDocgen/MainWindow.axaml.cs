@@ -81,12 +81,38 @@ public partial class MainWindow : Window
             Notifications.SendNotification("Please select both input and output directories.", "Warning");
             return;
         }
-        
-        await new CubeMainGenerator().GenerateCubeMainJson(inputDirectory, outputDirectory);
-        Notifications.SendNotification("Cube Main Parsed", "Success");
-        
-        await new UniqueItemsGenerator().GenerateCubeMainJson(inputDirectory, outputDirectory);
-        Notifications.SendNotification("Unique Items Parsed", "Success");
+
+        try
+        {
+            await new CubeMainGenerator().GenerateCubeMainJson(inputDirectory, outputDirectory);
+            Notifications.SendNotification("Cube Main Parsed", "Success");
+        }
+        catch (Exception ex)
+        {
+            Notifications.SendNotification($"Cube Main Error: {ex.Message}", "Error");
+            return;
+        }
+
+        try
+        {
+            await new UniqueItemsGenerator().GenerateCubeMainJson(inputDirectory, outputDirectory);
+            Notifications.SendNotification("Unique Items Parsed", "Success");
+        }
+        catch (Exception ex)
+        {
+            Notifications.SendNotification($"Unique Items Error: {ex.Message}", "Error");
+            return;
+        }
+
+        try
+        {
+            await new RunewordGenerator().GenerateRunewordJson(inputDirectory, outputDirectory);
+            Notifications.SendNotification("Runeword Parsed", "Success");
+        }
+        catch (Exception ex)
+        {
+            Notifications.SendNotification($"Runeword Error: {ex.Message}", "Error");
+        }
     }
     
     private async void OnLanguageChanged(object? sender, SelectionChangedEventArgs e)
@@ -99,3 +125,4 @@ public partial class MainWindow : Window
     }
 
 }
+

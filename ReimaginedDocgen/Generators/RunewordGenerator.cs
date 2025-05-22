@@ -10,64 +10,39 @@ using ReimaginedDocgen.Utilities;
 
 namespace ReimaginedDocgen.Generators;
 
-public class UniqueItemsGenerator
+public class RunewordGenerator
 {
-    public async Task GenerateCubeMainJson(string directory, string outputDirectory)
+    public async Task GenerateRunewordJson(string directory, string outputDirectory)
     {
         var path = Path.Combine(directory, "global", "excel");
-        var uniqueItems = Path.Combine(path, "uniqueitems.txt");
+        var uniqueItems = Path.Combine(path, "runes.txt");
         if (!File.Exists(uniqueItems))
         {
             Notifications.SendNotification($"Could not find {uniqueItems}", "Warning");
             return;
         }
-
-        var propertiesPath = Path.Combine(path, "properties.txt");
-        if (!File.Exists(propertiesPath))
-        {
-            Notifications.SendNotification($"Could not find {propertiesPath}", "Warning");
-            return;
-        }
-
-        var modifiersPath = Path.Combine(directory, "local", "lng", "strings", "item-modifiers.json");
-        if (!File.Exists(modifiersPath))
-        {
-            Notifications.SendNotification($"Could not find {modifiersPath}", "Warning");
-            return;
-        }
-
-        Notifications.SendNotification("Parsing uniqueitems.txt...", "Info");
-        var entries = await UniqueItemsParser.GetEntries(uniqueItems);
-        Notifications.SendNotification("Parsing properties.txt...", "Info");
-        var allProperties = await PropertiesParser.GetEntries(propertiesPath);
-        Notifications.SendNotification("Loading item-modifiers.json...", "Info");
-        var parser = new TranslationFileParser(modifiersPath);
+        
+        var entries = await RunesParser.GetEntries(uniqueItems);
+        
+        var allProperties = await PropertiesParser.GetEntries(Path.Combine(path, "properties.txt"));
+        var parser = new TranslationFileParser(Path.Combine(directory, "local", "lng", "strings", "item-runes.json"));
         
         var outputData = new List<object>();
-        int entryCount = 0;
         foreach (var entry in entries)
         {
-            entryCount++;
-            if (entryCount % 100 == 0)
-                Notifications.SendNotification($"Processing unique item {entryCount}...", "Info");
             var item = new
             {
-                Index = entry.Index,
-                ItemName = entry.ItemName,
-                Code = entry.Code,
+                Runes = new List<object>(),
+                Types = new List<object>(),
+                Name = entry.Name,
+                Enabled = false,
                 Properties = new List<object>(),
             };
-
-            if (entry.Properties == null)
+            
+            foreach (var property in entry.Mods)
             {
-                outputData.Add(item);
-                continue;
-            }
-
-            foreach (var property in entry.Properties)
-            {
-                var foundProperty = allProperties.FirstOrDefault(p => p.Code == property.Property);
-                var propertyName = property.Property;
+                var foundProperty = allProperties.FirstOrDefault(p => p.Code == property.Code);
+                var propertyName = property.Code;
                 if (foundProperty != null)
                 {
                     var translation = await PropertiesHelper.GetPropertyTranslationKeyAsync(path, foundProperty);
@@ -92,7 +67,7 @@ public class UniqueItemsGenerator
                     PropertyMax = propertyMax
                 });
             }
-
+            
             outputData.Add(item);
         }
 
@@ -100,7 +75,5 @@ public class UniqueItemsGenerator
         var json = JsonSerializer.Serialize(outputData, SerializerOptions.Indented);
 
         await File.WriteAllTextAsync(outputPath, json);
-        Notifications.SendNotification($"Wrote {outputData.Count} unique items to uniques.json", "Success");
     }
 }
-

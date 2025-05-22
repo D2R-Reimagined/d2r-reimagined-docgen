@@ -18,7 +18,7 @@
             <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
             <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="D2RReimaginedTools.FileExtensions" Version="0.1.4" />
+        <PackageReference Include="D2RReimaginedTools.FileExtensions" Version="0.1.5" />
         <PackageReference Include="Notification.Avalonia" Version="2.1.0" />
     </ItemGroup>
 </Project>
